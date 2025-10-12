@@ -117,6 +117,8 @@ func NewFilterableList[T FilterableItem](items []T, opts ...filterableListOption
 
 func (f *filterableList[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case ItemDeleteMsg:
+		return f, f.DeleteItem(msg.ID)
 	case tea.KeyPressMsg:
 		switch {
 		// handle movements
@@ -306,4 +308,12 @@ func (f *filterableList[T]) SetInputWidth(w int) {
 
 func (f *filterableList[T]) SetInputPlaceholder(ph string) {
 	f.placeholder = ph
+}
+
+func (f *filterableList[T]) DeleteItem(id string) tea.Cmd {
+	f.items = slices.DeleteFunc(f.items, func(item T) bool {
+		return item.ID() == id
+	})
+
+	return f.list.DeleteItem(id)
 }

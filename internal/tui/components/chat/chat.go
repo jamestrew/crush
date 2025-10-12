@@ -26,7 +26,8 @@ type SendMsg struct {
 	Attachments []message.Attachment
 }
 
-type SessionSelectedMsg = session.Session
+// TODO: make SessionSelectedMsg and SessionDeleteMsg tuple struct
+type SessionSelectedMsg struct{ Session session.Session }
 
 type SessionClearedMsg struct{}
 
@@ -35,6 +36,8 @@ type SelectionCopyMsg struct {
 	endSelection bool
 	x, y         int
 }
+
+type SessionDeleteMsg struct{ Session session.Session }
 
 const (
 	NotFound = -1
@@ -193,8 +196,8 @@ func (m *messageListCmp) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, m.handlePermissionRequest(msg.Payload))
 		return m, tea.Batch(cmds...)
 	case SessionSelectedMsg:
-		if msg.ID != m.session.ID {
-			cmds = append(cmds, m.SetSession(msg))
+		if msg.Session.ID != m.session.ID {
+			cmds = append(cmds, m.SetSession(msg.Session))
 		}
 		return m, tea.Batch(cmds...)
 	case SessionClearedMsg:

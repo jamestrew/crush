@@ -29,6 +29,10 @@ type HasAnim interface {
 	Spinning() bool
 }
 
+type ItemDeleteMsg struct {
+	ID string
+}
+
 type List[T Item] interface {
 	util.Model
 	layout.Sizeable
@@ -218,6 +222,8 @@ func (l *list[T]) Init() tea.Cmd {
 // Update implements List.
 func (l *list[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case ItemDeleteMsg:
+		return l, l.DeleteItem(msg.ID)
 	case tea.MouseWheelMsg:
 		if l.enableMouse {
 			return l.handleMouseWheel(msg)

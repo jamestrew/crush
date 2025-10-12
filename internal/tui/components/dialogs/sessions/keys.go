@@ -8,14 +8,15 @@ type KeyMap struct {
 	Select,
 	Next,
 	Previous,
-	Close key.Binding
+	Close,
+	Delete key.Binding
 }
 
 func DefaultKeyMap() KeyMap {
 	return KeyMap{
 		Select: key.NewBinding(
 			key.WithKeys("enter", "tab", "ctrl+y"),
-			key.WithHelp("enter", "choose"),
+			key.WithHelp("enter", "select"),
 		),
 		Next: key.NewBinding(
 			key.WithKeys("down", "ctrl+n"),
@@ -29,6 +30,10 @@ func DefaultKeyMap() KeyMap {
 			key.WithKeys("esc", "alt+esc"),
 			key.WithHelp("esc", "exit"),
 		),
+		Delete: key.NewBinding(
+			key.WithKeys("ctrl+d"),
+			key.WithHelp("ctrl+d", "delete"),
+		),
 	}
 }
 
@@ -39,6 +44,7 @@ func (k KeyMap) KeyBindings() []key.Binding {
 		k.Next,
 		k.Previous,
 		k.Close,
+		k.Delete,
 	}
 }
 
@@ -63,5 +69,6 @@ func (k KeyMap) ShortHelp() []key.Binding {
 		),
 		k.Select,
 		k.Close,
+		k.Delete,
 	}
 }

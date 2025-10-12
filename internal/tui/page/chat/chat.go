@@ -239,7 +239,7 @@ func (p *chatPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case chat.SendMsg:
 		return p, p.sendMessage(msg.Text, msg.Attachments)
 	case chat.SessionSelectedMsg:
-		return p, p.setSession(msg)
+		return p, p.setSession(msg.Session)
 	case splash.SubmitAPIKeyMsg:
 		u, cmd := p.splash.Update(msg)
 		p.splash = u.(splash.Splash)
@@ -744,7 +744,7 @@ func (p *chatPage) sendMessage(text string, attachments []message.Attachment) te
 			return util.ReportError(err)
 		}
 		session = newSession
-		cmds = append(cmds, util.CmdHandler(chat.SessionSelectedMsg(session)))
+		cmds = append(cmds, util.CmdHandler(chat.SessionSelectedMsg{Session: session}))
 	}
 	if p.app.CoderAgent == nil {
 		return util.ReportError(fmt.Errorf("coder agent is not initialized"))

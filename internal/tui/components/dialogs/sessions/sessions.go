@@ -15,6 +15,8 @@ import (
 	"github.com/charmbracelet/lipgloss/v2"
 )
 
+// TODO: grok the session backend connection with the db
+
 const SessionsDialogID dialogs.DialogID = "sessions"
 
 // SessionDialog interface for the session switching dialog
@@ -103,18 +105,27 @@ func (s *sessionDialogCmp) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				event.SessionSwitched()
 				return s, tea.Sequence(
 					util.CmdHandler(dialogs.CloseDialogMsg{}),
-					util.CmdHandler(
-						chat.SessionSelectedMsg(selected.Value()),
-					),
+					util.CmdHandler(chat.SessionSelectedMsg{Session: selected.Value()}),
 				)
 			}
 		case key.Matches(msg, s.keyMap.Close):
 			return s, util.CmdHandler(dialogs.CloseDialogMsg{})
+		case key.Matches(msg, s.keyMap.Delete):
+			selectedItem := s.sessionsList.SelectedItem()
+			if selectedItem != nil {
+				selected := *selectedItem
+				return s, util.CmdHandler(chat.SessionDeleteMsg{Session: selected.Value()})
+			}
 		default:
 			u, cmd := s.sessionsList.Update(msg)
 			s.sessionsList = u.(SessionsList)
 			return s, cmd
 		}
+	default:
+		// Forward all other messages to the list
+		u, cmd := s.sessionsList.Update(msg)
+		s.sessionsList = u.(SessionsList)
+		return s, cmd
 	}
 	return s, nil
 }

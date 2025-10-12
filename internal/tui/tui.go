@@ -29,6 +29,7 @@ import (
 	"github.com/charmbracelet/crush/internal/tui/components/dialogs/permissions"
 	"github.com/charmbracelet/crush/internal/tui/components/dialogs/quit"
 	"github.com/charmbracelet/crush/internal/tui/components/dialogs/sessions"
+	"github.com/charmbracelet/crush/internal/tui/exp/list"
 	"github.com/charmbracelet/crush/internal/tui/page"
 	"github.com/charmbracelet/crush/internal/tui/page/chat"
 	"github.com/charmbracelet/crush/internal/tui/styles"
@@ -160,9 +161,25 @@ func (a *appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// Session
 	case cmpChat.SessionSelectedMsg:
-		a.selectedSessionID = msg.ID
+		a.selectedSessionID = msg.Session.ID
 	case cmpChat.SessionClearedMsg:
 		a.selectedSessionID = ""
+	case cmpChat.SessionDeleteMsg:
+		err := a.app.Sessions.Delete(context.Background(), msg.Session.ID)
+		if err != nil {
+			return a, util.ReportError(fmt.Errorf("failed to delete session: %v", err))
+		}
+
+		// TODO: maybe use tea.Sequence to ensure order?
+		// TODO: want to refactor this excessive cmds appending
+		var cmds []tea.Cmd
+		if msg.Session.ID == a.selectedSessionID {
+			a.selectedSessionID = ""
+			cmds = append(cmds, util.CmdHandler(cmpChat.SessionClearedMsg{}))
+		}
+		cmds = append(cmds, util.CmdHandler(list.ItemDeleteMsg{ID: msg.Session.ID}))
+		cmds = append(cmds, util.ReportInfo("Session deleted"))
+		return a, tea.Batch(cmds...)
 	// Commands
 	case commands.SwitchSessionsMsg:
 		return a, func() tea.Msg {
